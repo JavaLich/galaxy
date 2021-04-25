@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 
+use rand::prelude::random;
+
 fn main() {
     App::build()
         .insert_resource(Msaa { samples: 4 })
@@ -17,13 +19,21 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // sphere
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 1.0, ..Default::default() })),
-        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-        transform: Transform::from_xyz(0.0, 0.5, 0.0),
-        ..Default::default()
-    });
+
+    for _i in 0..10 {
+        // sphere
+        commands.spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Icosphere { radius: random::<f32>(), ..Default::default() })),
+            material: materials.add(Color::rgb(random::<f32>(), random::<f32>(), random::<f32>()).into()),
+            transform: 
+                Transform::from_xyz(
+                    random::<f32>() * 10., 
+                    random::<f32>() * 10., 
+                    random::<f32>() * 10.
+                ),
+            ..Default::default()
+        });
+    }
 
     // light
     commands.spawn_bundle(LightBundle {
