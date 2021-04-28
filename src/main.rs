@@ -1,13 +1,18 @@
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::pbr::AmbientLight;
-use bevy::prelude::*;
+use bevy::{prelude::*, render::mesh::shape};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 
 use rand_distr::{Distribution, UnitSphere};
 
-const NUM_STARS: i32 = 100;
+const NUM_STARS: i32 = 0;
 
 fn main() {
     App::build()
+        .insert_resource(WindowDescriptor {
+            vsync: true,
+            ..Default::default()
+        })
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(AmbientLight {
             color: Color::WHITE,
@@ -16,9 +21,21 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .add_plugins(DefaultPlugins)
         .add_plugin(FlyCameraPlugin)
-        .add_startup_system(setup.system())
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(LogDiagnosticsPlugin::default())
+        .add_startup_system(setup_camera.system())
+        .add_startup_system(setup_solar_system.system())
         .add_startup_system(setup_stars.system())
         .run();
+}
+
+fn setup_camera(mut commands: Commands) {
+    commands
+        .spawn_bundle(PerspectiveCameraBundle {
+            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        })
+        .insert(FlyCamera::default());
 }
 
 fn setup_stars(
@@ -37,7 +54,7 @@ fn setup_stars(
         commands.spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Icosphere {
                 radius: 1.0,
-                subdivisions: 1,
+                subdivisions: 2,
                 ..Default::default()
             })),
             material: materials.add(Color::WHITE.into()),
@@ -45,10 +62,29 @@ fn setup_stars(
             ..Default::default()
         });
     });
+
+    let skybox = meshes.add(Mesh::from(shape::Plane { size: 100.0 }));
+    let mut transform = Transform::from_xyz(0.0, 0.0, -50.0);
+
+    transform.rotate(Quat::from_axis_angle(Vec3::X, 3.14 / 2.));
+    commands.spawn_bundle(PbrBundle {
+        mesh: skybox.clone(),
+        material: materials.add(Color::DARK_GRAY.into()),
+        transform: transform.clone(),
+        ..Default::default()
+    });
+
+    transform = Transform::from_xyz(0.0, 0.0, 50.0);
+    transform.rotate(Quat::from_axis_angle(Vec3::X, -3.14 / 2.));
+    commands.spawn_bundle(PbrBundle {
+        mesh: skybox.clone(),
+        material: materials.add(Color::DARK_GRAY.into()),
+        transform: transform.clone(),
+        ..Default::default()
+    });
 }
 
-// set up a simple 3D scene
-fn setup(
+fn setup_solar_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -60,7 +96,12 @@ fn setup(
                 radius: 10.0,
                 ..Default::default()
             })),
-            material: materials.add(Color::rgb(1.0, 1.0, 0.0).into()),
+            material: materials.add(StandardMaterial {
+                base_color: Color::YELLOW,
+                roughness: 0.6,
+                emissive: Color::YELLOW,
+                ..Default::default()
+            }),
             transform: Transform::from_xyz(4.0, 8.0, 4.0),
             ..Default::default()
         })
@@ -70,11 +111,19 @@ fn setup(
             ..Default::default()
         });
 
-    // camera
-    commands
-        .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+    // planet
+    commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Icosphere {
+            radius: 0.5,
             ..Default::default()
-        })
-        .insert(FlyCamera::default());
+        })),
+        material: materials.add(StandardMaterial {
+            base_color: Color::GREEN,
+            roughness: 0.6,
+            emissive: Color::GREEN,
+            ..Default::default()
+        }),
+        transform: Transform::from_xyz(20.0, 8.0, 4.0),
+        ..Default::default()
+    });
 }
