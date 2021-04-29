@@ -3,9 +3,7 @@ use bevy::pbr::AmbientLight;
 use bevy::{prelude::*, render::mesh::shape};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 
-use rand_distr::{Distribution, UnitSphere};
-
-const NUM_STARS: i32 = 0;
+mod background;
 
 fn main() {
     App::build()
@@ -23,9 +21,10 @@ fn main() {
         .add_plugin(FlyCameraPlugin)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(LogDiagnosticsPlugin::default())
+        .add_asset::<background::BackgroundMaterial>()
+        .add_startup_system(background::setup_background.system())
         .add_startup_system(setup_camera.system())
         .add_startup_system(setup_solar_system.system())
-        .add_startup_system(setup_stars.system())
         .run();
 }
 
@@ -36,52 +35,6 @@ fn setup_camera(mut commands: Commands) {
             ..Default::default()
         })
         .insert(FlyCamera::default());
-}
-
-fn setup_stars(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let mut rng = rand::thread_rng();
-    let star_pos: Vec<Vec3> = UnitSphere
-        .sample_iter(&mut rng)
-        .take(NUM_STARS as usize)
-        .map(|xyz| 800. * Vec3::new(xyz[0], xyz[1], xyz[2]))
-        .collect();
-
-    star_pos.into_iter().for_each(|pos| {
-        commands.spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Icosphere {
-                radius: 1.0,
-                subdivisions: 2,
-                ..Default::default()
-            })),
-            material: materials.add(Color::WHITE.into()),
-            transform: Transform::from_translation(pos),
-            ..Default::default()
-        });
-    });
-
-    let skybox = meshes.add(Mesh::from(shape::Plane { size: 100.0 }));
-    let mut transform = Transform::from_xyz(0.0, 0.0, -50.0);
-
-    transform.rotate(Quat::from_axis_angle(Vec3::X, 3.14 / 2.));
-    commands.spawn_bundle(PbrBundle {
-        mesh: skybox.clone(),
-        material: materials.add(Color::DARK_GRAY.into()),
-        transform: transform.clone(),
-        ..Default::default()
-    });
-
-    transform = Transform::from_xyz(0.0, 0.0, 50.0);
-    transform.rotate(Quat::from_axis_angle(Vec3::X, -3.14 / 2.));
-    commands.spawn_bundle(PbrBundle {
-        mesh: skybox.clone(),
-        material: materials.add(Color::DARK_GRAY.into()),
-        transform: transform.clone(),
-        ..Default::default()
-    });
 }
 
 fn setup_solar_system(
@@ -107,7 +60,7 @@ fn setup_solar_system(
         })
         .insert(Light {
             intensity: 50_000.,
-            range: 2000.,
+            range: 5000.,
             ..Default::default()
         });
 
