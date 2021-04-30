@@ -12,30 +12,7 @@ use bevy::{
 
 use rand_distr::{Distribution, UnitSphere};
 
-const VERTEX_SHADER: &str = r#"
-#version 450
-layout(location = 0) in vec3 Vertex_Position;
-layout(set = 0, binding = 0) uniform CameraViewProj {
-    mat4 ViewProj;
-};
-layout(set = 1, binding = 0) uniform Transform {
-    mat4 Model;
-};
-void main() {
-    gl_Position = ViewProj * Model * vec4(Vertex_Position, 1.0);
-}
-"#;
-
-const FRAGMENT_SHADER: &str = r#"
-#version 450
-layout(location = 0) out vec4 o_Target;
-layout(set = 2, binding = 0) uniform BackgroundMaterial_color {
-    vec4 color;
-};
-void main() {
-    o_Target = color;
-}
-"#;
+mod shaders;
 
 const NUM_STARS: i32 = 0;
 
@@ -63,8 +40,14 @@ pub fn setup_background(
     star_pos.into_iter().for_each(|_pos| {});
 
     let pipeline_handle = pipelines.add(PipelineDescriptor::default_config(ShaderStages {
-        vertex: shaders.add(Shader::from_glsl(ShaderStage::Vertex, VERTEX_SHADER)),
-        fragment: Some(shaders.add(Shader::from_glsl(ShaderStage::Fragment, FRAGMENT_SHADER))),
+        vertex: shaders.add(Shader::from_glsl(
+            ShaderStage::Vertex,
+            shaders::VERTEX_SHADER,
+        )),
+        fragment: Some(shaders.add(Shader::from_glsl(
+            ShaderStage::Fragment,
+            shaders::FRAGMENT_SHADER,
+        ))),
     }));
 
     render_graph.add_system_node(
