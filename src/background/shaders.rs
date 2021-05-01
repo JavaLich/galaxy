@@ -328,7 +328,23 @@ float pnoise(vec4 P, vec4 rep)
 }
 
 void main() {
-    float frequency = 3.0;
-    o_Target = vec4(cnoise(normalize(fragPos) * frequency));
+    float frequency = 1.0;
+    int octaves = 4;
+    float noise = 0.0;
+    float factor = 1.0;
+    float persistence = 0.4;
+    float roughness = 3.0;
+
+    for (int i = 0; i < octaves; i++) {
+        noise += cnoise(normalize(fragPos) * frequency * i * 0.72354) * factor;
+        factor *= persistence;
+        frequency *= roughness;
+    }
+
+    o_Target = vec4(0.0, 0.0, noise, 1.0);
+
+    if (noise > 0.5)
+        o_Target = vec4(noise, 0.0, 0.0, 1.0);
+
 }
 "#;
