@@ -6,13 +6,11 @@ use bevy::{
         pipeline::{PipelineDescriptor, RenderPipeline},
         render_graph::{base, AssetRenderResourcesNode, RenderGraph},
         renderer::RenderResources,
-        shader::{ShaderStage, ShaderStages},
+        shader::ShaderStages,
     },
 };
 
 use rand_distr::{Distribution, UnitSphere};
-
-mod shaders;
 
 const NUM_STARS: i32 = 0;
 
@@ -24,12 +22,14 @@ pub struct BackgroundMaterial {
 
 pub fn setup_background(
     mut commands: Commands,
+    asset_server: ResMut<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut custom_materials: ResMut<Assets<BackgroundMaterial>>,
     mut pipelines: ResMut<Assets<PipelineDescriptor>>,
-    mut shaders: ResMut<Assets<Shader>>,
     mut render_graph: ResMut<RenderGraph>,
 ) {
+    asset_server.watch_for_changes().unwrap();
+
     let mut rng = rand::thread_rng();
     let star_pos: Vec<Vec3> = UnitSphere
         .sample_iter(&mut rng)
@@ -40,14 +40,8 @@ pub fn setup_background(
     star_pos.into_iter().for_each(|_pos| {});
 
     let pipeline_handle = pipelines.add(PipelineDescriptor::default_config(ShaderStages {
-        vertex: shaders.add(Shader::from_glsl(
-            ShaderStage::Vertex,
-            shaders::VERTEX_SHADER,
-        )),
-        fragment: Some(shaders.add(Shader::from_glsl(
-            ShaderStage::Fragment,
-            shaders::FRAGMENT_SHADER,
-        ))),
+        vertex: asset_server.load::<Shader, _>("shaders/background.vert"),
+        fragment: Some(asset_server.load::<Shader, _>("shaders/background.frag")),
     }));
 
     render_graph.add_system_node(
