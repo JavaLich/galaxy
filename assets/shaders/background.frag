@@ -7,15 +7,27 @@ layout(set = 2, binding = 0) uniform BackgroundMaterial_color {
     vec4 color;
 };
 
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
 
 void main() {
     vec3 col = vec3(0.0);
+    float d;
+    float m = 0.0;
 
-    vec2 uv = in_uv - 0.5;
+    for (float y = -1.; y < 2; y++) {
+        for (float x = -1; x < 2; x++) {
+            vec2 uv = in_uv;
+            uv *= 20.;
+            uv = fract(uv);
+            uv -= 0.5;
+            vec2 id = floor(uv) + vec2(x, y);
+            d = length(uv);
+            m += smoothstep(0.0, 0.5, 0.001 / d);
+        }
+    }
 
-    float d = length(uv);
-    float m = 0.10 / d;
-    m *= 0.1;
     
     col += vec3(m);
 
