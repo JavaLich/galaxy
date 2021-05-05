@@ -26,13 +26,16 @@ void main() {
 
     vec2 uv = in_uv;
     uv *= 20.;
-    uv = fract(uv);
-    uv -= 0.5;
 
-    vec2 gv = fract(uv) - 0.5;
-    vec2 id = floor(uv);
 
-    col += star(gv);
+    for (float y = -1.; y < 2.; y++) {
+        for (float x = -1.; x < 2.; x++) {
+            vec2 offset = vec2(x, y);
+            vec2 gv = fract(uv) + offset - 0.5;
+            vec2 id = floor(uv) + offset;
+            col += star(gv + rand(id));
+        }
+    }
 
     o_Target = vec4(col, 1.0);
 }
