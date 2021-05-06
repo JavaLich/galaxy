@@ -16,7 +16,7 @@ float star(vec2 p) {
     float m = 0.0;
 
     d = length(p);
-    m += smoothstep(0.0, 0.5, 0.005 / d);
+    m += smoothstep(0.01, 0.5, 0.005 / d);
 
     return m;
 }
@@ -27,13 +27,15 @@ void main() {
     vec2 uv = in_uv;
     uv *= 20.;
 
+    vec2 gv = fract(uv) - 0.5;
+    vec2 id = floor(uv);
 
     for (float y = -1.; y < 2.; y++) {
         for (float x = -1.; x < 2.; x++) {
             vec2 offset = vec2(x, y);
-            vec2 gv = fract(uv) + offset - 0.5;
-            vec2 id = floor(uv) + offset;
-            col += star(gv + rand(id));
+
+            float n = rand(id + offset);
+            col += star(gv - offset -vec2(n, fract(n*34.)-.5));
         }
     }
 
