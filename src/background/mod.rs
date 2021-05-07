@@ -10,10 +10,6 @@ use bevy::{
     },
 };
 
-use rand_distr::{Distribution, UnitSphere};
-
-const NUM_STARS: i32 = 0;
-
 #[derive(RenderResources, Default, TypeUuid)]
 #[uuid = "0dbbc306-413c-4a2f-8f24-4a8212205619"]
 pub struct BackgroundMaterial {
@@ -29,15 +25,6 @@ pub fn setup_background(
     mut render_graph: ResMut<RenderGraph>,
 ) {
     asset_server.watch_for_changes().unwrap();
-
-    let mut rng = rand::thread_rng();
-    let star_pos: Vec<Vec3> = UnitSphere
-        .sample_iter(&mut rng)
-        .take(NUM_STARS as usize)
-        .map(|xyz| 800. * Vec3::new(xyz[0], xyz[1], xyz[2]))
-        .collect();
-
-    star_pos.into_iter().for_each(|_pos| {});
 
     let pipeline_handle = pipelines.add(PipelineDescriptor::default_config(ShaderStages {
         vertex: asset_server.load::<Shader, _>("shaders/background.vert"),
