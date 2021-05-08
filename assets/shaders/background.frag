@@ -3,10 +3,6 @@ layout(location = 0) out vec4 o_Target;
 layout(location = 0) in vec4 fragPos;
 layout(location = 1) in vec2 in_uv;
 
-layout(set = 2, binding = 0) uniform BackgroundMaterial_color {
-    vec4 color;
-};
-
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
@@ -39,5 +35,5 @@ void main() {
         }
     }
 
-    o_Target = vec4(col, 1.0);
+    o_Target = vec4(in_uv, 0.0, 1.0);
 }
