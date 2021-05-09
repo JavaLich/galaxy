@@ -20,7 +20,11 @@ float star(vec2 p) {
 void main() {
     vec3 col = vec3(0.0);
 
-    vec2 uv = in_uv;
+    vec3 fragSphere = normalize(fragPos.xyz);
+    vec3 d = -fragSphere;
+    vec2 uv = vec2(0.5 - atan(d.x, d.y)/(2. * 3.1415), 0.5 - asin(d.y)/3.1415);
+
+    //vec2 uv = in_uv;
     uv *= 20.;
 
     vec2 gv = fract(uv) - 0.5;
@@ -35,5 +39,6 @@ void main() {
         }
     }
 
-    o_Target = vec4(in_uv, 0.0, 1.0);
+    o_Target = vec4(uv, 0.0, 1.0);
+    o_Target = vec4(col, 1.0);
 }
