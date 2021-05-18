@@ -1,1 +1,4 @@
 target/
+*.nix
+*.sh
+build.rs

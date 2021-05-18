@@ -10,6 +10,9 @@ use bevy::{
     },
 };
 
+use rand;
+use rand_distr::{Distribution, UnitSphere};
+
 #[derive(RenderResources, Default, TypeUuid)]
 #[uuid = "0dbbc306-413c-4a2f-8f24-4a8212205619"]
 pub struct BackgroundMaterial;
@@ -22,6 +25,14 @@ pub fn setup_background(
     mut pipelines: ResMut<Assets<PipelineDescriptor>>,
     mut render_graph: ResMut<RenderGraph>,
 ) {
+    let mut rng = rand::thread_rng();
+
+    let stars: Vec<Vec3> = UnitSphere
+        .sample_iter(&mut rng)
+        .take(1000)
+        .map(|xyz| 800.0 * Vec3::new(xyz[0], xyz[1], xyz[2]))
+        .collect();
+
     asset_server.watch_for_changes().unwrap();
 
     let pipeline_handle = pipelines.add(PipelineDescriptor::default_config(ShaderStages {
@@ -29,10 +40,7 @@ pub fn setup_background(
         fragment: Some(asset_server.load::<Shader, _>("shaders/background.frag")),
     }));
 
-    let mesh = meshes.add(Mesh::from(shape::Icosphere {
-        radius: 500.0,
-        subdivisions: 10,
-    }));
+    let mesh = meshes.add(Mesh::from(shape::Cube { size: 1000.0 }));
     let material = custom_materials.add(BackgroundMaterial);
 
     let mut transform = Transform::from_xyz(0.0, 0.0, 0.0);
@@ -47,14 +55,12 @@ pub fn setup_background(
         .add_node_edge("background_material", base::node::MAIN_PASS)
         .unwrap();
 
-    commands
-        .spawn_bundle(MeshBundle {
-            mesh,
-            render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
-                pipeline_handle,
-            )]),
-            transform,
-            ..Default::default()
-        })
-        .insert(material);
+    commands.spawn_bundle(MeshBundle {
+        mesh,
+        render_pipelines: RenderPipelines::from_pipelines(vec![RenderPipeline::new(
+            pipeline_handle,
+        )]),
+        transform,
+        ..Default::default()
+    }).insert(material);
 }
