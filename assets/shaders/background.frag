@@ -34,7 +34,7 @@ void main() {
     //vec3 dist = coord;
     //vec2 uv = vec2(0.5 + atan2(dist.x, dist.y)/(2. * PI), 0.5 - asin(dist.y)/PI);
 
-    vec2 uv = in_uv;
+    vec2 uv = in_uv - 0.5;
     uv *= 20.;
 
     vec2 gv = fract(uv) - 0.5;
@@ -44,11 +44,10 @@ void main() {
         for (float x = -1.; x < 2.; x++) {
             vec2 offset = vec2(x, y);
             float n = rand(id + offset);
+
             col += star(gv - offset -vec2(n, fract(n*34.)-.5));
         }
     }
 
-    o_Target = vec4(col, 1.0);
-
-    //o_Target = vec4(col, 1.0);
+    o_Target = vec4(abs(uv), 0.0, 1.0);
 }
