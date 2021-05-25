@@ -4,6 +4,7 @@ use bevy::{prelude::*, render::mesh::shape};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 
 mod background;
+mod generation;
 
 fn main() {
     App::build()
@@ -22,9 +23,11 @@ fn main() {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_asset::<background::BackgroundMaterial>()
+        .add_asset::<generation::planet::PlanetMaterial>()
         .add_startup_system(background::setup_background.system())
         .add_startup_system(setup_camera.system())
         .add_startup_system(setup_solar_system.system())
+        .add_startup_system(generation::planet::setup_planets.system())
         .run();
 }
 
@@ -63,20 +66,4 @@ fn setup_solar_system(
             range: 5000.,
             ..Default::default()
         });
-
-    // planet
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Icosphere {
-            radius: 0.5,
-            ..Default::default()
-        })),
-        material: materials.add(StandardMaterial {
-            base_color: Color::GREEN,
-            roughness: 0.6,
-            emissive: Color::GREEN,
-            ..Default::default()
-        }),
-        transform: Transform::from_xyz(20.0, 8.0, 4.0),
-        ..Default::default()
-    });
 }
